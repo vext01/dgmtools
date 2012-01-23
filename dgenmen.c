@@ -19,5 +19,7 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	gns_print_rom_header(&hdr);
+
 	exit(EXIT_SUCCESS);
 }
