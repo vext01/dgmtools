@@ -29,7 +29,7 @@
 #define GNS_FLEN_RAM			(GNS_OFS_MODEM_DATA - GNS_OFS_RAM)
 #define GNS_FLEN_MODEM_DATA		(GNS_OFS_MEMO - GNS_OFS_MODEM_DATA)
 #define GNS_FLEN_MEMO			(GNS_OFS_RELEASE_COUNTRY - GNS_OFS_MEMO)
-#define GNS_FLEN_RELEASE_COUNTERY	1
+#define GNS_FLEN_RELEASE_COUNTRY	1
 
 struct gns_rom_header {
 	/* pad, as first field is at 0x100 */
@@ -47,7 +47,13 @@ struct gns_rom_header {
 	char		ram[GNS_FLEN_RAM];
 	char		modem_data[GNS_FLEN_MODEM_DATA];
 	char		memo[GNS_FLEN_MEMO];
-	char		release_country[GNS_FLEN_RELEASE_COUNTERY];
+	char		release_country[GNS_FLEN_RELEASE_COUNTRY];
+};
+
+struct gns_rom_header_mapping {
+	int		offset;
+	int		length;
+	char		*name;
 };
 
 /* protos */
