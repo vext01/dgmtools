@@ -72,12 +72,6 @@ gns_print_rom_header_field_hex(char *title, void *data, size_t ct)
 	puts("");
 }
 
-#if 0
-#define GNS_PRINT_HDR_FLD(title, field, len)				\
-	printf("%-30s: [", title);					\
-	gns_nprint(field, len);						\
-	puts("]");
-#endif
 void
 gns_print_rom_header(struct gns_rom_header *hdr)
 {
