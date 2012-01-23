@@ -1,3 +1,5 @@
+CFLAGS=-g
+
 all: dgenmen
 
 dgenmen: rom.o
