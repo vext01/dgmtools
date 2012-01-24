@@ -12,6 +12,9 @@
 #define GNS_OFS_IO_SUPPORT	0x190
 #define GNS_OFS_CAPACITY	0x1a0
 #define GNS_OFS_RAM		0x1a8
+#define GNS_OFS_RAM_PRESENT	0x1b0
+#define GNS_OFS_RAM_START	0x1b4
+#define GNS_OFS_RAM_LENGTH	0x1b7
 #define GNS_OFS_MODEM_DATA	0x1bc
 #define GNS_OFS_MEMO		0x1c8
 #define GNS_OFS_COUNTRY		0x1f0
@@ -30,6 +33,9 @@
 #define GNS_FLEN_IO_SUPPORT	(GNS_OFS_CAPACITY - GNS_OFS_IO_SUPPORT)
 #define GNS_FLEN_CAPACITY	(GNS_OFS_RAM - GNS_OFS_CAPACITY)
 #define GNS_FLEN_RAM		(GNS_OFS_MODEM_DATA - GNS_OFS_RAM)
+#define GNS_FLEN_RAM_PRESENT	(2)
+#define GNS_FLEN_RAM_START	(4)
+#define GNS_FLEN_RAM_LENGTH	(4)
 #define GNS_FLEN_MODEM_DATA	(GNS_OFS_MEMO - GNS_OFS_MODEM_DATA)
 #define GNS_FLEN_MEMO		(GNS_OFS_COUNTRY - GNS_OFS_MEMO)
 #define GNS_FLEN_COUNTRY	(1)
@@ -65,5 +71,6 @@ int		gns_load_rom_header(struct gns_rom_header *, char *);
 void		gns_print_rom_header(struct gns_rom_header *hdr);
 void		gns_print_rom_header_field_hex(char *title, void *data, size_t ct);
 void		gns_print_rom_header_field_char(char *title, void *data, size_t ct);
+void		gns_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct);
 
 #endif

@@ -14,6 +14,9 @@ struct gns_rom_header_mapping gns_rom_header_mappings[] = {
 	{GNS_OFS_IO_SUPPORT,	GNS_FLEN_IO_SUPPORT,	"IO Support",	gns_print_rom_header_field_char},
 	{GNS_OFS_CAPACITY,	GNS_FLEN_CAPACITY,	"ROM Capacity",	gns_print_rom_header_field_hex},
 	{GNS_OFS_RAM,		GNS_FLEN_RAM,		"RAM",		gns_print_rom_header_field_hex},
+	{GNS_OFS_RAM_PRESENT,	GNS_FLEN_RAM_PRESENT,	"RAM Present?",	gns_print_rom_header_field_char},
+	{GNS_OFS_RAM_START,	GNS_FLEN_RAM_START,	"RAM Start",	gns_print_rom_header_field_u32_byteswapped},
+	{GNS_OFS_RAM_LENGTH,	GNS_FLEN_RAM_LENGTH,	"RAM Length",	gns_print_rom_header_field_u32_byteswapped},
 	{GNS_OFS_MODEM_DATA,	GNS_FLEN_MODEM_DATA,	"Modem Data",	gns_print_rom_header_field_char},
 	{GNS_OFS_MEMO,		GNS_FLEN_MEMO,		"Memo",		gns_print_rom_header_field_char},
 	{GNS_OFS_COUNTRY,	GNS_FLEN_COUNTRY,	"Release Country",gns_print_rom_header_field_char},
@@ -70,6 +73,31 @@ gns_print_rom_header_field_hex(char *title, void *data, size_t ct)
 	for (i = 0; i < ct; i++)
 		printf("%02x ", bytes[i]);
 	puts("");
+}
+
+void
+gns_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct)
+{
+	uint32_t		val = 0;
+	int			i;
+
+	unsigned char		*bytes = (unsigned char *) data;
+	printf("%-30s: ", title);					\
+	for (i = 0; i < ct; i++)
+		printf("%02x ", bytes[i]);
+	puts("");
+
+	if (ct != 4) {
+		warn("expected a 4 byte count");
+		return;
+	}
+
+	val += ((uint8_t *) data)[0] << 16;
+	val += ((uint8_t *) data)[1] << 24;
+	val += ((uint8_t *) data)[2] << 0;
+	val += ((uint8_t *) data)[3] << 8;
+
+	printf("%-30s: 0x%4x\n", title, val);
 }
 
 void
