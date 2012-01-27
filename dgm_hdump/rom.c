@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "dgenmen.h"
 #include "rom.h"
+#include "../include/dgm_common.h"
 
 struct gns_rom_header_mapping gns_rom_header_mappings[] = {
 	{GNS_OFS_CONSOLE,	GNS_FLEN_CONSOLE,	"Console Name",	gns_print_rom_header_field_char},
@@ -23,13 +23,11 @@ struct gns_rom_header_mapping gns_rom_header_mappings[] = {
 	{-1,			-1,			0,		NULL}
 };
 
-
-
 int
 gns_load_rom_header(struct gns_rom_header *hdr, char *file)
 {
 	FILE			*f;
-	int			 ret = GNS_FAIL;
+	int			 ret = DGM_FAIL;
 
 	if ((f = fopen(file, "r")) == NULL) {
 		warn("fopen");
@@ -42,7 +40,7 @@ gns_load_rom_header(struct gns_rom_header *hdr, char *file)
 		goto clean;
 	}
 
-	ret = GNS_OK;
+	ret = DGM_OK;
 clean:
 	fclose(f);
 	return (ret);

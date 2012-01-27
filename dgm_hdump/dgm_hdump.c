@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "dgenmen.h"
 #include "rom.h"
+#include "../include/dgm_common.h"
 
 int
 main(int argc, char **argv)
@@ -14,7 +14,7 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if (gns_load_rom_header(&hdr, argv[1]) != GNS_OK) {
+	if (gns_load_rom_header(&hdr, argv[1]) != DGM_OK) {
 		fprintf(stderr, "load header failed XXX\n");
 		exit(EXIT_FAILURE);
 	}
