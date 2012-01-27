@@ -19,28 +19,28 @@
 #include "rom.h"
 #include "../include/dgm_common.h"
 
-struct gns_rom_header_mapping gns_rom_header_mappings[] = {
-	{GNS_OFS_CONSOLE,	GNS_FLEN_CONSOLE,	"Console Name",	gns_print_rom_header_field_char},
-	{GNS_OFS_COPYRIGHT,	GNS_FLEN_COPYRIGHT,	"Copyright",	gns_print_rom_header_field_char},
-	{GNS_OFS_NAME_DOMESTIC, GNS_FLEN_NAME_DOMESTIC, "Domestic Name",gns_print_rom_header_field_char},
-	{GNS_OFS_NAME_OVERSEAS, GNS_FLEN_NAME_OVERSEAS, "Overseas Name",gns_print_rom_header_field_char},
-	{GNS_OFS_TYPE,		GNS_FLEN_TYPE,		"Game Type",	gns_print_rom_header_field_char},
-	{GNS_OFS_PRODUCT_CODE,	GNS_FLEN_PRODUCT_CODE,	"Product Code",	gns_print_rom_header_field_char},
-	{GNS_OFS_CHECKSUM,	GNS_FLEN_CHECKSUM,	"Checksum",	gns_print_rom_header_field_hex},
-	{GNS_OFS_IO_SUPPORT,	GNS_FLEN_IO_SUPPORT,	"IO Support",	gns_print_rom_header_field_char},
-	{GNS_OFS_CAPACITY,	GNS_FLEN_CAPACITY,	"ROM Capacity",	gns_print_rom_header_field_hex},
-	{GNS_OFS_RAM,		GNS_FLEN_RAM,		"RAM",		gns_print_rom_header_field_hex},
-	{GNS_OFS_RAM_PRESENT,	GNS_FLEN_RAM_PRESENT,	"RAM Present?",	gns_print_rom_header_field_char},
-	{GNS_OFS_RAM_START,	GNS_FLEN_RAM_START,	"RAM Start",	gns_print_rom_header_field_u32_byteswapped},
-	{GNS_OFS_RAM_LENGTH,	GNS_FLEN_RAM_LENGTH,	"RAM Length",	gns_print_rom_header_field_u32_byteswapped},
-	{GNS_OFS_MODEM_DATA,	GNS_FLEN_MODEM_DATA,	"Modem Data",	gns_print_rom_header_field_char},
-	{GNS_OFS_MEMO,		GNS_FLEN_MEMO,		"Memo",		gns_print_rom_header_field_char},
-	{GNS_OFS_COUNTRY,	GNS_FLEN_COUNTRY,	"Release Country",gns_print_rom_header_field_char},
+struct dgm_rom_header_mapping dgm_rom_header_mappings[] = {
+	{GNS_OFS_CONSOLE,	GNS_FLEN_CONSOLE,	"Console Name",	dgm_print_rom_header_field_char},
+	{GNS_OFS_COPYRIGHT,	GNS_FLEN_COPYRIGHT,	"Copyright",	dgm_print_rom_header_field_char},
+	{GNS_OFS_NAME_DOMESTIC, GNS_FLEN_NAME_DOMESTIC, "Domestic Name",dgm_print_rom_header_field_char},
+	{GNS_OFS_NAME_OVERSEAS, GNS_FLEN_NAME_OVERSEAS, "Overseas Name",dgm_print_rom_header_field_char},
+	{GNS_OFS_TYPE,		GNS_FLEN_TYPE,		"Game Type",	dgm_print_rom_header_field_char},
+	{GNS_OFS_PRODUCT_CODE,	GNS_FLEN_PRODUCT_CODE,	"Product Code",	dgm_print_rom_header_field_char},
+	{GNS_OFS_CHECKSUM,	GNS_FLEN_CHECKSUM,	"Checksum",	dgm_print_rom_header_field_hex},
+	{GNS_OFS_IO_SUPPORT,	GNS_FLEN_IO_SUPPORT,	"IO Support",	dgm_print_rom_header_field_char},
+	{GNS_OFS_CAPACITY,	GNS_FLEN_CAPACITY,	"ROM Capacity",	dgm_print_rom_header_field_hex},
+	{GNS_OFS_RAM,		GNS_FLEN_RAM,		"RAM",		dgm_print_rom_header_field_hex},
+	{GNS_OFS_RAM_PRESENT,	GNS_FLEN_RAM_PRESENT,	"RAM Present?",	dgm_print_rom_header_field_char},
+	{GNS_OFS_RAM_START,	GNS_FLEN_RAM_START,	"RAM Start",	dgm_print_rom_header_field_u32_byteswapped},
+	{GNS_OFS_RAM_END,	GNS_FLEN_RAM_END,	"RAM End",	dgm_print_rom_header_field_u32_byteswapped},
+	{GNS_OFS_MODEM_DATA,	GNS_FLEN_MODEM_DATA,	"Modem Data",	dgm_print_rom_header_field_char},
+	{GNS_OFS_MEMO,		GNS_FLEN_MEMO,		"Memo",		dgm_print_rom_header_field_char},
+	{GNS_OFS_COUNTRY,	GNS_FLEN_COUNTRY,	"Release Country",dgm_print_rom_header_field_char},
 	{-1,			-1,			0,		NULL}
 };
 
 int
-gns_load_rom_header(struct gns_rom_header *hdr, char *file)
+dgm_load_rom_header(struct dgm_rom_header *hdr, char *file)
 {
 	FILE			*f;
 	int			 ret = DGM_FAIL;
@@ -50,8 +50,8 @@ gns_load_rom_header(struct gns_rom_header *hdr, char *file)
 		goto clean;
 	}
 
-	printf("Loading %d bytes from %s\n", sizeof(struct gns_rom_header), file);
-	if (fread(hdr, sizeof(struct gns_rom_header), 1, f) != 1) {
+	printf("Loading %d bytes from %s\n", sizeof(struct dgm_rom_header), file);
+	if (fread(hdr, sizeof(struct dgm_rom_header), 1, f) != 1) {
 		warn("fread: short read");
 		goto clean;
 	}
@@ -66,7 +66,7 @@ clean:
  * Fields in the rom are not null terminated, so we have to print them like this
  */
 void
-gns_print_rom_header_field_char(char *title, void *data, size_t ct)
+dgm_print_rom_header_field_char(char *title, void *data, size_t ct)
 {
 	int			 i;
 	char			*str = (char *) data;
@@ -78,7 +78,7 @@ gns_print_rom_header_field_char(char *title, void *data, size_t ct)
 }
 
 void
-gns_print_rom_header_field_hex(char *title, void *data, size_t ct)
+dgm_print_rom_header_field_hex(char *title, void *data, size_t ct)
 {
 	int			 i;
 	unsigned char		*bytes = (unsigned char *) data;
@@ -90,34 +90,29 @@ gns_print_rom_header_field_hex(char *title, void *data, size_t ct)
 }
 
 void
-gns_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct)
+dgm_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct)
 {
 	uint32_t		val = 0;
 	int			i;
-
 	unsigned char		*bytes = (unsigned char *) data;
-	printf("%-30s: ", title);					\
-	for (i = 0; i < ct; i++)
-		printf("%02x ", bytes[i]);
-	puts("");
 
 	if (ct != 4) {
 		warn("expected a 4 byte count");
 		return;
 	}
 
-	val += ((uint8_t *) data)[0] << 16;
-	val += ((uint8_t *) data)[1] << 24;
-	val += ((uint8_t *) data)[2] << 0;
-	val += ((uint8_t *) data)[3] << 8;
+	val |= ((uint8_t *) data)[1] << 16;
+	val |= ((uint8_t *) data)[0] << 24;
+	val |= ((uint8_t *) data)[3] << 0;
+	val |= ((uint8_t *) data)[2] << 8;
 
-	printf("%-30s: 0x%4x\n", title, val);
+	printf("%-30s: %d: 0x%4x\n", title, val, val);
 }
 
 void
-gns_print_rom_header(struct gns_rom_header *hdr)
+dgm_print_rom_header(struct dgm_rom_header *hdr)
 {
-	struct gns_rom_header_mapping		*f = gns_rom_header_mappings;
+	struct dgm_rom_header_mapping		*f = dgm_rom_header_mappings;
 	void					*fld_start;
 
 	while (f->name != NULL) {

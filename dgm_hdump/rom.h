@@ -30,7 +30,7 @@
 #define GNS_OFS_RAM		0x1a8
 #define GNS_OFS_RAM_PRESENT	0x1b0
 #define GNS_OFS_RAM_START	0x1b4
-#define GNS_OFS_RAM_LENGTH	0x1b7
+#define GNS_OFS_RAM_END		0x1b8
 #define GNS_OFS_MODEM_DATA	0x1bc
 #define GNS_OFS_MEMO		0x1c8
 #define GNS_OFS_COUNTRY		0x1f0
@@ -51,12 +51,12 @@
 #define GNS_FLEN_RAM		(GNS_OFS_MODEM_DATA - GNS_OFS_RAM)
 #define GNS_FLEN_RAM_PRESENT	(2)
 #define GNS_FLEN_RAM_START	(4)
-#define GNS_FLEN_RAM_LENGTH	(4)
+#define GNS_FLEN_RAM_END	(4)
 #define GNS_FLEN_MODEM_DATA	(GNS_OFS_MEMO - GNS_OFS_MODEM_DATA)
 #define GNS_FLEN_MEMO		(GNS_OFS_COUNTRY - GNS_OFS_MEMO)
 #define GNS_FLEN_COUNTRY	(1)
 
-struct gns_rom_header {
+struct dgm_rom_header {
 	/* pad, as first field is at 0x100 */
 	char		pad[GNS_OFS_FIELD_PAD];
 	/* Actual fields start here */
@@ -75,7 +75,7 @@ struct gns_rom_header {
 	char		country[GNS_FLEN_COUNTRY];
 };
 
-struct gns_rom_header_mapping {
+struct dgm_rom_header_mapping {
 	int		 offset;
 	int		 length;
 	char		 *name;
@@ -83,10 +83,10 @@ struct gns_rom_header_mapping {
 };
 
 /* protos */
-int		gns_load_rom_header(struct gns_rom_header *, char *);
-void		gns_print_rom_header(struct gns_rom_header *hdr);
-void		gns_print_rom_header_field_hex(char *title, void *data, size_t ct);
-void		gns_print_rom_header_field_char(char *title, void *data, size_t ct);
-void		gns_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct);
+int		dgm_load_rom_header(struct dgm_rom_header *, char *);
+void		dgm_print_rom_header(struct dgm_rom_header *hdr);
+void		dgm_print_rom_header_field_hex(char *title, void *data, size_t ct);
+void		dgm_print_rom_header_field_char(char *title, void *data, size_t ct);
+void		dgm_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct);
 
 #endif
