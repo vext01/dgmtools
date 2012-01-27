@@ -20,8 +20,8 @@
 
 #include "../include/dgm_common.h"
 
-int		dgm_unpack(char *, char *);
-int		dgm_pack(char *, char *);
+int		dgm_unpad(char *, char *);
+int		dgm_pad(char *, char *);
 void		usage();
 
 int
@@ -33,10 +33,10 @@ main(int argc, char **argv)
 	while ((ch = getopt(argc, argv, "pu")) != -1) {
 		switch (ch) {
 		case 'p':
-			handler = dgm_pack;
+			handler = dgm_pad;
 			break;
 		case 'u':
-			handler = dgm_unpack;
+			handler = dgm_unpad;
 			break;
 		default:
 			usage();
@@ -58,13 +58,13 @@ main(int argc, char **argv)
 void
 usage()
 {
-	fprintf(stderr, "Packing usage:\t\tdgm_rampack -p <infile> <outfile>\n");
-	fprintf(stderr, "Unpacking usage:\tdgm_rampack -u <infile> <outfile>\n");
+	fprintf(stderr, "Pading usage:\t\tdgm_rampad -p <infile> <outfile>\n");
+	fprintf(stderr, "Unpading usage:\tdgm_rampad -u <infile> <outfile>\n");
 	exit(EXIT_FAILURE);
 }
 
 int
-dgm_unpack(char *inpath, char *outpath)
+dgm_unpad(char *inpath, char *outpath)
 {
 	FILE			*in = NULL, *out = NULL;
 	int			 c, ret = DGM_FAIL;
@@ -107,11 +107,9 @@ clean:
 
 
 int
-dgm_pack(char *inpath, char *outpath) {
+dgm_pad(char *inpath, char *outpath) {
 	FILE			*in = NULL, *out = NULL;
 	int			 c, ret = DGM_FAIL;
-
-	printf("Packing %s -> %s\n", inpath, outpath);
 
 	if ((in = fopen(inpath, "r")) == NULL) {
 		warn("fopen in");

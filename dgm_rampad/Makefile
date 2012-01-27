@@ -1,8 +1,8 @@
-all: dgm_rampack
+all: dgm_rampad
 
-dgm_rampack: dgm_rampack.c
+dgm_rampad: dgm_rampad.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ $@.c
 
 .PHONY: clean
 clean:
-	-rm dgm_rampack
+	-rm dgm_rampad
