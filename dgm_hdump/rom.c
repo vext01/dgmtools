@@ -106,7 +106,7 @@ dgm_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct)
 	val |= ((uint8_t *) data)[3] << 0;
 	val |= ((uint8_t *) data)[2] << 8;
 
-	printf("%-30s: %d: 0x%4x\n", title, val, val);
+	printf("%-30s: 0x%4x\n", title, val);
 }
 
 void
