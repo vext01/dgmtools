@@ -1,4 +1,5 @@
 PROGS=dgm_hdump dgm_rampad dgm_s3ramgen
+CFLAGS+=-g
 
 .PHONY: all
 all: ${PROGS}

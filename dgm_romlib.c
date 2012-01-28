@@ -51,6 +51,8 @@ dgm_load_rom_header(struct dgm_rom_header *hdr, char *file)
 	FILE			*f;
 	int			 ret = DGM_FAIL;
 
+	DPRINTF(HGD_D_INFO, "load %s", file);
+
 	if ((f = fopen(file, "r")) == NULL) {
 		warn("fopen");
 		goto clean;

@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <limits.h>
 
+#include "dgm_common.h"
+
+HGD_DEBUG_INIT
+
 int
 main(int argc, char **argv)
 {

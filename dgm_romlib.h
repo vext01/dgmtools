@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ROM_H_
-#define ROM_H_
+#ifndef DGM_ROMLIB_H_
+#define DGM_ROMLIB_H_
 
 /* ROM Offsets */
 #define GNS_OFS_CONSOLE		0x100

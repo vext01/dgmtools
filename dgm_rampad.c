@@ -25,9 +25,7 @@ int		dgm_unpad(char *, char *);
 int		dgm_pad(char *, char *);
 void		usage();
 
-#define DGM_RPFUNC_NONE		(0)
-#define DGM_RPFUNC_PAD		(1)
-#define DGM_RPFUNC_UNPAD	(2)
+HGD_DEBUG_INIT;
 
 int
 main(int argc, char **argv)
