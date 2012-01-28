@@ -19,24 +19,31 @@
 #include <stdlib.h>
 
 #include "../include/dgm_common.h"
+#include "../dgm_romlib/dgm_romlib.h"
 
 int		dgm_unpad(char *, char *);
 int		dgm_pad(char *, char *);
 void		usage();
 
+#define DGM_RPFUNC_NONE		(0)
+#define DGM_RPFUNC_PAD		(1)
+#define DGM_RPFUNC_UNPAD	(2)
+
 int
 main(int argc, char **argv)
 {
-	int			ch;
-	int			(*handler)(char *, char *) = NULL;
+	int			 ch;
+	unsigned char		*inbuf, *outbuf;
+	struct dgm_file		 in_fs, out_fs;
+	int			(*func)(struct dgm_file *, struct dgm_file *) = NULL;
 
 	while ((ch = getopt(argc, argv, "pu")) != -1) {
 		switch (ch) {
 		case 'p':
-			handler = dgm_pad;
+			func = dgm_dgen_ram_pad;
 			break;
 		case 'u':
-			handler = dgm_unpad;
+			func = dgm_dgen_ram_unpad;
 			break;
 		default:
 			usage();
@@ -47,10 +54,27 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (handler == NULL)
+
+	if (func == NULL)
 		usage();
 
-	handler(argv[0], argv[1]);
+	if (dgm_suck_in_file(argv[0], &in_fs) != DGM_OK) {
+		warn("suck in file");
+		goto clean;
+	}
+
+	if (func(&in_fs, &out_fs) != DGM_OK) {
+		warn("something failed man");
+		goto clean;
+	}
+
+	if (dgm_dump_out_file(argv[1], &out_fs) != DGM_OK) {
+		warn("dump out file");
+		goto clean;
+	}
+
+clean:
+	/* XXX clean up */
 
 	exit(EXIT_SUCCESS);
 }
