@@ -14,10 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
-#include "rom.h"
-#include "../include/dgm_common.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "dgm_romlib.h"
+#include "dgm_common.h"
 
 struct dgm_rom_header_mapping dgm_rom_header_mappings[] = {
 	{GNS_OFS_CONSOLE,	GNS_FLEN_CONSOLE,	"Console Name",	dgm_print_rom_header_field_char},
@@ -120,4 +126,132 @@ dgm_print_rom_header(struct dgm_rom_header *hdr)
 		f->printer(f->name, fld_start, f->length);
 		f++;
 	}
+}
+
+/*
+ * Load and unpad a dgen-sdl ram dump file into a buffer.
+ *
+ * dgen-sdl dumps every byte of a ram save in a word aligned
+ * fashion, which is not true to the megadrive.
+ */
+int
+dgm_dgen_ram_unpad(struct dgm_file *in_fs, struct dgm_file *out_fs)
+{
+	int			 ret = DGM_FAIL;
+	size_t			 i;
+	unsigned char		*p;
+
+	memset(out_fs, 0, sizeof(out_fs));
+
+	if ((out_fs->bytes = malloc(in_fs->sz / 2)) == NULL) {
+		warn("malloc");
+		goto clean;
+	}
+
+	p = in_fs->bytes;
+	for (i = 0; i < in_fs->sz; i++) {
+		out_fs->bytes[i] = *p;
+		p += 2;
+	}
+
+	ret = DGM_OK;
+clean:
+	return (ret);
+}
+
+int
+dgm_dgen_ram_pad(struct dgm_file *in_fs, struct dgm_file *out_fs)
+{
+	int			 ret = DGM_FAIL;
+	size_t			 i;
+	unsigned char		*p;
+
+	memset(out_fs, 0, sizeof(out_fs));
+
+	if ((out_fs->bytes = calloc(2, in_fs->sz)) == NULL) {
+		warn("calloc");
+		goto clean;
+	}
+
+	p = in_fs->bytes;
+	for (i = 0; i < in_fs->sz; i++) {
+		out_fs->bytes[i] = *(p++);
+		*(p++) = 0x00;
+		(out_fs->sz)++;
+	}
+
+	ret = DGM_OK;
+clean:
+	return (ret);
+}
+
+int
+dgm_suck_in_file(char *path, struct dgm_file *fs)
+{
+	FILE			*f = NULL;
+	int			 c, ret = DGM_FAIL;
+	struct stat		 st;
+	unsigned char		*p;
+
+	memset(fs, 0, sizeof(fs));
+
+	if (stat(path, &st) < 0) {
+		warn("stat");
+		goto clean;
+	}
+
+	if ((fs->bytes = malloc(st.st_size)) == NULL) {
+		warn("malloc");
+		goto clean;
+	}
+
+	if ((f = fopen(path, "r")) == NULL) {
+		warn("fopen");
+		goto clean;
+	}
+
+	while ((c = fgetc(f)) != EOF) {
+		*(fs->bytes)++ = c;
+		fs->sz++;
+	}
+
+	if (ferror(f)) {
+		warn("fgetc");
+		goto clean;
+	}
+
+	ret = DGM_OK;
+clean:
+	fclose(f);
+
+	return (ret);
+}
+
+int
+dgm_dump_out_file(char *path, struct dgm_file *fs)
+{
+	FILE			*f = NULL;
+	int			 ret = DGM_FAIL;
+	size_t			 i;
+
+	if ((f = fopen(path, "w")) == NULL) {
+		warn("fopen");
+		goto clean;
+	}
+
+	for (i = 0; i < fs->sz; i++) {
+		if ((fputc((int) fs->bytes[i], f)) != EOF)
+			break;
+	}
+
+	if (ferror(f)) {
+		warn("fgetc");
+		goto clean;
+	}
+
+	ret = DGM_OK;
+clean:
+	fclose(f);
+
+	return (ret);
 }

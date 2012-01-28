@@ -17,8 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "rom.h"
-#include "../include/dgm_common.h"
+#include "dgm_romlib.h"
+#include "dgm_common.h"
 
 int
 main(int argc, char **argv)

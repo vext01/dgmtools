@@ -1,13 +1,21 @@
+PROGS=dgm_hdump dgm_rampad dgm_s3ramgen
+
 .PHONY: all
-all:
-	cd dgm_hdump && ${MAKE}
-	cd dgm_rampad && ${MAKE}
-	cd dgm_romlib && ${MAKE}
+all: ${PROGS}
+
+dgm_romlib.o: dgm_romlib.c dgm_romlib.h
+	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ dgm_romlib.c
+
+dgm_hdump: dgm_hdump.c dgm_romlib.o
+	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ dgm_romlib.o $@.c
+
+dgm_rampad: dgm_rampad.c dgm_romlib.o
+	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ dgm_romlib.o $@.c
+
+dgm_s3ramgen: dgm_s3ramgen.c dgm_romlib.o
+	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ dgm_romlib.o $@.c
 
 .PHONY: clean
 clean:
-	cd dgm_hdump && ${MAKE} clean
-	cd dgm_rampad && ${MAKE} clean
-	cd dgm_romlib && ${MAKE} clean
-
+	rm -f ${PROGS} dgm_romlib.o
 

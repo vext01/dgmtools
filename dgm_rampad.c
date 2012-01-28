@@ -18,8 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/dgm_common.h"
-#include "../dgm_romlib/dgm_romlib.h"
+#include "dgm_common.h"
+#include "dgm_romlib.h"
 
 int		dgm_unpad(char *, char *);
 int		dgm_pad(char *, char *);
