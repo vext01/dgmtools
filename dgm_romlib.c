@@ -143,7 +143,9 @@ dgm_dgen_ram_unpad(struct dgm_file *in_fs, struct dgm_file *out_fs)
 	size_t			 i;
 	unsigned char		*p;
 
-	memset(out_fs, 0, sizeof(out_fs));
+	DPRINTF(HGD_D_INFO, "unpadding %u bytes", in_fs->sz);
+
+	memset(out_fs, 0, sizeof(*out_fs));
 
 	if ((out_fs->bytes = malloc(in_fs->sz / 2)) == NULL) {
 		warn("malloc");
@@ -168,7 +170,9 @@ dgm_dgen_ram_pad(struct dgm_file *in_fs, struct dgm_file *out_fs)
 	size_t			 i;
 	unsigned char		*p;
 
-	memset(out_fs, 0, sizeof(out_fs));
+	DPRINTF(HGD_D_INFO, "padding %u bytes", in_fs->sz);
+
+	memset(out_fs, 0, sizeof(*out_fs));
 
 	if ((out_fs->bytes = calloc(2, in_fs->sz)) == NULL) {
 		warn("calloc");
@@ -178,7 +182,8 @@ dgm_dgen_ram_pad(struct dgm_file *in_fs, struct dgm_file *out_fs)
 	p = in_fs->bytes;
 	for (i = 0; i < in_fs->sz; i++) {
 		out_fs->bytes[i] = *(p++);
-		*(p++) = 0x00;
+		*p = 0x00;
+		p++;
 		(out_fs->sz)++;
 	}
 
@@ -195,7 +200,7 @@ dgm_suck_in_file(char *path, struct dgm_file *fs)
 	struct stat		 st;
 	unsigned char		*p;
 
-	memset(fs, 0, sizeof(fs));
+	memset(fs, 0, sizeof(*fs));
 
 	if (stat(path, &st) < 0) {
 		warn("stat");

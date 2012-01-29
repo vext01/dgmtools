@@ -35,13 +35,16 @@ main(int argc, char **argv)
 	struct dgm_file		 in_fs, out_fs;
 	int			(*func)(struct dgm_file *, struct dgm_file *) = NULL;
 
-	while ((ch = getopt(argc, argv, "pu")) != -1) {
+	while ((ch = getopt(argc, argv, "pux:")) != -1) {
 		switch (ch) {
 		case 'p':
 			func = dgm_dgen_ram_pad;
 			break;
 		case 'u':
 			func = dgm_dgen_ram_unpad;
+			break;
+		case 'x':
+			hgd_debug = atoi(optarg);
 			break;
 		default:
 			usage();
@@ -52,6 +55,8 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
+	DPRINTF(HGD_D_INFO, "In file: '%s', Out file: '%s'", argv[0], argv[1]);
+
 
 	if (func == NULL)
 		usage();
@@ -60,6 +65,8 @@ main(int argc, char **argv)
 		warn("suck in file");
 		goto clean;
 	}
+
+	DPRINTF(HGD_D_INFO, "Infile is %u bytes", in_fs.sz);
 
 	if (func(&in_fs, &out_fs) != DGM_OK) {
 		warn("something failed man");
@@ -80,8 +87,10 @@ clean:
 void
 usage()
 {
-	fprintf(stderr, "Pading usage:\t\tdgm_rampad -p <infile> <outfile>\n");
-	fprintf(stderr, "Unpading usage:\tdgm_rampad -u <infile> <outfile>\n");
+	printf("Pading usage:\t\tdgm_rampad -p <options> <infile> <outfile>\n");
+	printf("Unpading usage:\tdgm_rampad -u <options> <infile> <outfile>\n");
+	printf("\t\t\t-x num\tdebug level");
+
 	exit(EXIT_FAILURE);
 }
 
