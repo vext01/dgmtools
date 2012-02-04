@@ -144,20 +144,23 @@ dgm_dgen_ram_unpad(struct dgm_file *in_fs, struct dgm_file *out_fs)
 	unsigned char		*p;
 
 	DPRINTF(HGD_D_INFO, "unpadding %u bytes", in_fs->sz);
-
-	memset(out_fs, 0, sizeof(*out_fs));
+	DPRINTF(HGD_D_INFO, "allocd %u bytes", in_fs->sz/2);
 
 	if ((out_fs->bytes = malloc(in_fs->sz / 2)) == NULL) {
 		warn("malloc");
 		goto clean;
 	}
+	out_fs->sz = 0;
 
-	p = in_fs->bytes;
-	for (i = 0; i < in_fs->sz; i++) {
-		out_fs->bytes[i] = *p;
-		p += 2;
+	memset(out_fs->bytes, 0, sizeof(in_fs->sz / 2));
+
+	p = out_fs->bytes;
+	for (i = 0; i < in_fs->sz; i+=2) {
+		*(p++) = in_fs->bytes[i];
+		out_fs->sz++;
 	}
 
+	DPRINTF(HGD_D_INFO, "unpad done");
 	ret = DGM_OK;
 clean:
 	return (ret);
@@ -179,14 +182,14 @@ dgm_dgen_ram_pad(struct dgm_file *in_fs, struct dgm_file *out_fs)
 		goto clean;
 	}
 
-	p = in_fs->bytes;
+	p = out_fs->bytes;
 	for (i = 0; i < in_fs->sz; i++) {
-		out_fs->bytes[i] = *(p++);
-		*p = 0x00;
-		p++;
-		(out_fs->sz)++;
+		*(p++) = in_fs->bytes[i];
+		*(p++) = 0x00;
+		out_fs->sz += 2;
 	}
 
+	DPRINTF(HGD_D_INFO, "Padding OK");
 	ret = DGM_OK;
 clean:
 	return (ret);
@@ -217,8 +220,9 @@ dgm_suck_in_file(char *path, struct dgm_file *fs)
 		goto clean;
 	}
 
+	p = fs->bytes;
 	while ((c = fgetc(f)) != EOF) {
-		*(fs->bytes)++ = c;
+		*(p++) = c;
 		fs->sz++;
 	}
 
@@ -241,13 +245,15 @@ dgm_dump_out_file(char *path, struct dgm_file *fs)
 	int			 ret = DGM_FAIL;
 	size_t			 i;
 
+	DPRINTF(HGD_D_INFO, "Dumping %u bytes to %s", fs->sz, path);
+
 	if ((f = fopen(path, "w")) == NULL) {
 		warn("fopen");
 		goto clean;
 	}
 
 	for (i = 0; i < fs->sz; i++) {
-		if ((fputc((int) fs->bytes[i], f)) != EOF)
+		if ((fputc((int) fs->bytes[i], f)) == EOF)
 			break;
 	}
 
