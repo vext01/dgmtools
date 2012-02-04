@@ -17,6 +17,7 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "dgm_common.h"
 #include "dgm_romlib.h"
@@ -31,7 +32,6 @@ int
 main(int argc, char **argv)
 {
 	int			 ch;
-	unsigned char		*inbuf, *outbuf;
 	struct dgm_file		 in_fs, out_fs;
 	int			(*func)(struct dgm_file *, struct dgm_file *) = NULL;
 

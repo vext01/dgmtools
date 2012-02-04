@@ -1,8 +1,11 @@
+#include <sys/types.h>
+
+#include <err.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-#include <err.h>
+#include <unistd.h>
 
 #include "dgm_common.h"
 #include "dgm_romlib.h"
@@ -172,15 +175,139 @@ clean:
 	return (ret);
 }
 
+void
+usage()
+{
+	printf("XXX\n");
+	exit(EXIT_FAILURE);
+}
+
+#define SLOT_CHECK							\
+	if ((slot < 0) || (slot > 6)) {					\
+		DPRINTF(HGD_D_ERROR, "Slot out of range: %d", slot);	\
+		return (DGM_FAIL);					\
+	}
+
+int
+s3_set_character(unsigned char *ram, int slot, unsigned char val)
+{
+	DPRINTF(HGD_D_INFO, "set");
+	SLOT_CHECK;
+	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_CHARACTER] = val;
+
+	return (DGM_OK);
+}
+
+int
+s3_set_zone(unsigned char *ram, int slot, unsigned char val)
+{
+	DPRINTF(HGD_D_INFO, "set");
+	SLOT_CHECK;
+	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_ZONE] = val;
+
+	return (DGM_OK);
+}
+
+int
+s3_set_emeralds(unsigned char *ram, int slot, unsigned char val)
+{
+	int				i = 0;
+	uint8_t				ems = 0;
+
+
+	DPRINTF(HGD_D_INFO, "set");
+	SLOT_CHECK;
+
+	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_EMS_COLLECTED] = val;
+
+	/* count the number of emeralds passed in bitfield */
+	for (i = 0; i < 7; i++)
+		ems += ((val >> i) & 0x1);
+
+	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_EM_COUNT] = ems;
+
+	printf("Emeralds: %x = %u\n", val, ems);
+
+	return (DGM_OK);
+}
+
+int
+s3_set_used(unsigned char *ram, int slot, unsigned char val)
+{
+	DPRINTF(HGD_D_WARN, "set");
+	SLOT_CHECK;
+	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_USED] = 0;
+
+	return (DGM_OK);
+}
+
+#define S3_NUM_SAVES		6
 int
 main(int argc, char **argv)
 {
-	/* XXX */
-	char			*outfile = "newram";
+	int			ch, slot = -1;
+	struct dgm_file		fs;
+	int			ret = DGM_FAIL, err;
 
-	s3_test(outfile);
+	memset(&fs, 0, sizeof(struct dgm_file));
+	if ((fs.bytes = calloc(1, S3_RAM_SZ)) == NULL) {
+		warn("malloc");
+		goto clean;
+	}
+	memcpy(fs.bytes, s3_ram, S3_RAM_SZ);
+	fs.sz = S3_RAM_SZ;
 
-	return (EXIT_SUCCESS);
+	while ((ch = getopt(argc, argv, "c:e:hs:x:z:")) != -1) {
+		err = DGM_OK;
+
+		switch (ch) {
+		case 'c': /* character */
+			err = s3_set_character(fs.bytes, slot, strtoll(optarg, 0, 0));
+			break;
+		case 'e': /* emeralds collected bitfield */
+			err = s3_set_emeralds(fs.bytes, slot, strtoll(optarg, 0, 0));
+			break;
+		case 's': /* slot */
+			slot = atoi(optarg);
+			err = s3_set_used(fs.bytes, slot, strtoll(optarg, 0, 0));
+			break;
+		case 'x': /* debug */
+			hgd_debug = atoi(optarg);
+			break;
+		case 'z': /* zone */
+			err = s3_set_zone(fs.bytes, slot, strtoll(optarg, 0, 0));
+			break;
+		case 'h':
+		default:
+			usage();
+			/* NOREACH */
+			break;
+		}
+
+		if (err == DGM_FAIL)
+			goto clean;
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (slot == -1) {
+		DPRINTF(HGD_D_ERROR, "Please select a slot");
+		goto clean;
+	}
+
+	if (argc != 1) {
+		DPRINTF(HGD_D_ERROR, "Please provide an outfile");
+		goto clean;
+	}
+
+	/* OK, let's checksum this and copy the backup */
+	s3_write_checksum(fs.bytes);
+	s3_write_second_copy(fs.bytes);
+
+	/* and write away */
+	dgm_dump_out_file(argv[0], &fs);
+
+	ret = DGM_OK;
+clean:
+	return (ret);
 }
-
-
