@@ -94,15 +94,6 @@ void		dgm_print_rom_header_field_hex(char *title, void *data, size_t ct);
 void		dgm_print_rom_header_field_char(char *title, void *data, size_t ct);
 void		dgm_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct);
 
-#if 0
-int		dgm_dgen_ram_unpad(unsigned char *inbuf, unsigned char **outbuf_p, size_t sz);
-int		dgm_dgen_ram_pad(unsigned char *inbuf, unsigned char **outbuf_p, size_t sz);
-
-int		dgm_suck_in_file(char *path, unsigned char *buf);
-int		dgm_dump_out_file(char *path, unsigned char *buf, size_t sz);
-#endif
-
-
 int		dgm_dgen_ram_pad(struct dgm_file *in_fs, struct dgm_file *out_fs);
 int		dgm_dgen_ram_unpad(struct dgm_file *in_fs, struct dgm_file *out_fs);
 

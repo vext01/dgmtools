@@ -17,10 +17,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <err.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 
 #include "dgm_romlib.h"
 #include "dgm_common.h"
@@ -58,7 +61,6 @@ dgm_load_rom_header(struct dgm_rom_header *hdr, char *file)
 		goto clean;
 	}
 
-	printf("Loading %d bytes from %s\n", sizeof(struct dgm_rom_header), file);
 	if (fread(hdr, sizeof(struct dgm_rom_header), 1, f) != 1) {
 		warn("fread: short read");
 		goto clean;
@@ -101,8 +103,6 @@ void
 dgm_print_rom_header_field_u32_byteswapped(char *title, void *data, size_t ct)
 {
 	uint32_t		val = 0;
-	int			i;
-	unsigned char		*bytes = (unsigned char *) data;
 
 	if (ct != 4) {
 		warn("expected a 4 byte count");
@@ -143,8 +143,8 @@ dgm_dgen_ram_unpad(struct dgm_file *in_fs, struct dgm_file *out_fs)
 	size_t			 i;
 	unsigned char		*p;
 
-	DPRINTF(HGD_D_INFO, "unpadding %u bytes", in_fs->sz);
-	DPRINTF(HGD_D_INFO, "allocd %u bytes", in_fs->sz/2);
+	DPRINTF(HGD_D_INFO, "unpadding %lu bytes", in_fs->sz);
+	DPRINTF(HGD_D_INFO, "allocd %lu bytes", in_fs->sz/2);
 
 	if ((out_fs->bytes = malloc(in_fs->sz / 2)) == NULL) {
 		warn("malloc");
@@ -173,7 +173,7 @@ dgm_dgen_ram_pad(struct dgm_file *in_fs, struct dgm_file *out_fs)
 	size_t			 i;
 	unsigned char		*p;
 
-	DPRINTF(HGD_D_INFO, "padding %u bytes", in_fs->sz);
+	DPRINTF(HGD_D_INFO, "padding %lu bytes", in_fs->sz);
 
 	memset(out_fs, 0, sizeof(*out_fs));
 
@@ -245,7 +245,7 @@ dgm_dump_out_file(char *path, struct dgm_file *fs)
 	int			 ret = DGM_FAIL;
 	size_t			 i;
 
-	DPRINTF(HGD_D_INFO, "Dumping %u bytes to %s", fs->sz, path);
+	DPRINTF(HGD_D_INFO, "Dumping %lu bytes to %s", fs->sz, path);
 
 	if ((f = fopen(path, "w")) == NULL) {
 		warn("fopen");

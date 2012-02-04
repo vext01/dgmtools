@@ -246,8 +246,8 @@ int
 main(int argc, char **argv)
 {
 	int			ch, slot = -1;
-	struct dgm_file		fs;
-	int			ret = DGM_FAIL, err;
+	struct dgm_file		fs, pad_fs, *write_fs;
+	int			ret = DGM_FAIL, err, pad = 0;
 
 	memset(&fs, 0, sizeof(struct dgm_file));
 	if ((fs.bytes = calloc(1, S3_RAM_SZ)) == NULL) {
@@ -257,7 +257,7 @@ main(int argc, char **argv)
 	memcpy(fs.bytes, s3_ram, S3_RAM_SZ);
 	fs.sz = S3_RAM_SZ;
 
-	while ((ch = getopt(argc, argv, "c:e:hs:x:z:")) != -1) {
+	while ((ch = getopt(argc, argv, "c:e:hps:x:z:")) != -1) {
 		err = DGM_OK;
 
 		switch (ch) {
@@ -266,6 +266,9 @@ main(int argc, char **argv)
 			break;
 		case 'e': /* emeralds collected bitfield */
 			err = s3_set_emeralds(fs.bytes, slot, strtoll(optarg, 0, 0));
+			break;
+		case 'p':
+			pad = 1;
 			break;
 		case 's': /* slot */
 			slot = atoi(optarg);
@@ -304,8 +307,20 @@ main(int argc, char **argv)
 	s3_write_checksum(fs.bytes);
 	s3_write_second_copy(fs.bytes);
 
+	/* if we need to use dgen (emulator), we word align (pad) */
+	write_fs = &fs;
+	if (pad) {
+		DPRINTF(HGD_D_INFO, "Padding ram");
+		if (dgm_dgen_ram_pad(&fs, &pad_fs) != DGM_OK) {
+			DPRINTF(HGD_D_ERROR, "padding failed");
+			goto clean;
+		}
+
+		write_fs = &pad_fs;
+	}
+
 	/* and write away */
-	dgm_dump_out_file(argv[0], &fs);
+	dgm_dump_out_file(argv[0], write_fs);
 
 	ret = DGM_OK;
 clean:
