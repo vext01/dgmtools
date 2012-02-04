@@ -175,10 +175,23 @@ clean:
 	return (ret);
 }
 
+/* 
+	while ((ch = getopt(argc, argv, "c:e:hMps:x:z:")) != -1) {
+	*/
 void
 usage()
 {
-	printf("XXX\n");
+	printf("Usage:\tdgm_s3ramgen [options] outputfile\n\n");
+	printf("Options:\n");
+	printf("  -c num\tCharacter select (0=ST, 1=S, 2=T)\n");
+	printf("  -e num\tEmeralds (8-bitfield)\n");
+	printf("  -h    \tShow help\n");
+	printf("  -M    \tMake a MEGA-RAM (fully complete RAM)\n");
+	printf("  -p    \tPad (word-align) RAM (for dgen emulator usage)\n");
+	printf("  -s num\tChoose slot to change\n");
+	printf("  -x num\tDebug level (0-3)\n");
+	printf("  -z num\tChoose zone (0-6)\n");
+
 	exit(EXIT_FAILURE);
 }
 
