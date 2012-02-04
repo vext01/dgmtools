@@ -221,22 +221,38 @@ s3_set_emeralds(unsigned char *ram, int slot, unsigned char val)
 	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_EMS_COLLECTED] = val;
 
 	/* count the number of emeralds passed in bitfield */
-	for (i = 0; i < 7; i++)
+	for (i = 0; i < 8; i++)
 		ems += ((val >> i) & 0x1);
 
 	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_EM_COUNT] = ems;
-
-	printf("Emeralds: %x = %u\n", val, ems);
 
 	return (DGM_OK);
 }
 
 int
-s3_set_used(unsigned char *ram, int slot, unsigned char val)
+s3_set_used(unsigned char *ram, int slot)
 {
-	DPRINTF(HGD_D_WARN, "set");
+	DPRINTF(HGD_D_INFO, "set");
 	SLOT_CHECK;
 	ram[S3_SAVE_SLOTS_START + ((slot - 1) * S3_SAVE_SLOT_LEN) + S3_SAVE_OFFSET_USED] = 0;
+
+	return (DGM_OK);
+}
+
+int
+s3_set_megaram(unsigned char *ram, int slot)
+{
+	int		i;
+	int		character = 0;
+
+	DPRINTF(HGD_D_INFO, "Making megaram");
+
+	for (i = 0; i < 7; i++, character++) {
+		s3_set_character(ram, i, character % 3);
+		s3_set_zone(ram, i, 7);
+		s3_set_emeralds(ram, i, 0xfe);
+		s3_set_used(ram, i);
+	}
 
 	return (DGM_OK);
 }
@@ -247,7 +263,7 @@ main(int argc, char **argv)
 {
 	int			ch, slot = -1;
 	struct dgm_file		fs, pad_fs, *write_fs;
-	int			ret = DGM_FAIL, err, pad = 0;
+	int			ret = DGM_FAIL, err, pad = 0, megaram = 0;
 
 	memset(&fs, 0, sizeof(struct dgm_file));
 	if ((fs.bytes = calloc(1, S3_RAM_SZ)) == NULL) {
@@ -257,7 +273,7 @@ main(int argc, char **argv)
 	memcpy(fs.bytes, s3_ram, S3_RAM_SZ);
 	fs.sz = S3_RAM_SZ;
 
-	while ((ch = getopt(argc, argv, "c:e:hps:x:z:")) != -1) {
+	while ((ch = getopt(argc, argv, "c:e:hMps:x:z:")) != -1) {
 		err = DGM_OK;
 
 		switch (ch) {
@@ -267,12 +283,16 @@ main(int argc, char **argv)
 		case 'e': /* emeralds collected bitfield */
 			err = s3_set_emeralds(fs.bytes, slot, strtoll(optarg, 0, 0));
 			break;
+		case 'M':
+			err = s3_set_megaram(fs.bytes, slot);
+			megaram = 1;
+			break;
 		case 'p':
 			pad = 1;
 			break;
 		case 's': /* slot */
 			slot = atoi(optarg);
-			err = s3_set_used(fs.bytes, slot, strtoll(optarg, 0, 0));
+			err = s3_set_used(fs.bytes, slot);
 			break;
 		case 'x': /* debug */
 			hgd_debug = atoi(optarg);
@@ -293,7 +313,7 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (slot == -1) {
+	if ((megaram == 0 ) && (slot == -1)) {
 		DPRINTF(HGD_D_ERROR, "Please select a slot");
 		goto clean;
 	}
