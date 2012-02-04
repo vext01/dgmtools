@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <err.h>
 
 #include "dgm_common.h"
 #include "dgm_romlib.h"
@@ -78,57 +79,6 @@ unsigned char s3_ram[512] = {
 #define S3_SAVE_OFFSET_EMS_COLLECTED		0x06 /* bitfield */
 #define S3_SAVE_OFFSET_SPECIAL_STAGES_ENTERED	0x07 /* bitfield */
 
-int
-main(int argc, char **argv)
-{
-	/* XXX */
-	char			*outfile = "newram";
-	uint16_t		 ck = 0;
-
-	s3_test(outfile);
-
-	return (EXIT_SUCCESS);
-}
-
-
-int s3_checksum(unsigned char *ram);
-
-int
-s3_test(char *outpath)
-{
-	struct dgm_file		fs;
-	uint16_t		ck = 0;
-	int			ret = DGM_FAIL;
-
-	memset(&fs, 0, sizeof(struct dgm_file));
-	if ((fs.bytes = calloc(1, S3_RAM_SZ)) == NULL) {
-		warn("malloc");
-		goto clean;
-	}
-	memcpy(fs.bytes, s3_ram, S3_RAM_SZ);
-	fs.sz = S3_RAM_SZ;
-
-	/* just set a zone */
-	printf("DADADA: %x\n", S3_SAVE_SLOTS_START + S3_SAVE_OFFSET_ZONE);
-
-	fs.bytes[S3_SAVE_SLOTS_START + S3_SAVE_OFFSET_ZONE] = (unsigned char) 6;
-	fs.bytes[S3_SAVE_SLOTS_START + S3_SAVE_OFFSET_USED] = (unsigned char) 128;
-	fs.bytes[S3_CHECKSUM_OFFSET - 2] = (unsigned char) 66;
-	fs.bytes[S3_CHECKSUM_OFFSET - 1] = (unsigned char) 68;
-
-	s3_checksum(fs.bytes);
-
-	s3_write_second_copy(fs.bytes);
-
-	printf("CHECKSUM: %02x %02x\n", fs.bytes[S3_CHECKSUM_OFFSET], fs.bytes[S3_CHECKSUM_OFFSET+1]);
-
-	dgm_dump_out_file(outpath, &fs);
-
-	ret = DGM_OK;
-clean:
-
-	return (ret);
-}
 
 int
 s3_write_second_copy(unsigned char *ram)
@@ -137,19 +87,14 @@ s3_write_second_copy(unsigned char *ram)
 	return (DGM_OK);
 }
 
-/*
- * calculates a ram checksum for a given save slot
- */
 int
-s3_checksum(unsigned char *ram)
+s3_gen_cksum(unsigned char *ram, unsigned char ret_cksum[2])
 {
 	int			 ret = DGM_OK;
 	unsigned char		*p;
-	uint16_t		 offset, len, word = 0;
-	int			 ch, cc;
+	uint16_t		 word = 0;
+	int			 cc;
 	uint16_t		 cksum;
-	unsigned char		 byte1;
-	unsigned char		 byte2;
 
 	printf("XXX: %u\n", ram[S3_CHECKSUM_OFFSET - 2]);
 
@@ -161,11 +106,11 @@ s3_checksum(unsigned char *ram)
 
 		/* read byte 1 */
 		word |= *(p++) << 8;
-		printf("byte1: %02x\n", ch);
+		printf("byte1: %02x\n", *p);
 
 		/* read byte 2 */
 		word |= *(p++);
-		printf("byte2: %02x\n", ch);
+		printf("byte2: %02x\n", *p);
 
 		printf("bytes: %04x\n", word);
 
@@ -188,22 +133,76 @@ s3_checksum(unsigned char *ram)
 			printf("^ 8810: 0x%04x\n", cksum);
 		}
 
-		printf("end loop %d: 0x%04x\n\n", len, cksum);
+		printf("end loop:  0x%04x\n\n", cksum);
 
 	}
 
-	printf("WTF %d: 0x%04x\n\n", len, cksum);
-
-	byte1 = (unsigned char) (cksum >> 8);
-	byte2 = (unsigned char) (cksum & 0x00ff);
-	printf("0x%02x 0x%02x\n", byte1, byte2);
-
-	/* update cksum field */
-	//memcpy(ram + S3_CHECKSUM_OFFSET, cksum, sizeof(uint16_t));
-
-	ram[S3_CHECKSUM_OFFSET] = byte2;
-	ram[S3_CHECKSUM_OFFSET + 1] = byte1;
+	ret_cksum[0] = (unsigned char) (cksum >> 8);
+	ret_cksum[1] = (unsigned char) (cksum & 0x00ff);
 
 	return (ret);
-
 }
+
+/*
+ * calculates a ram checksum for a given save slot
+ */
+int
+s3_write_checksum(unsigned char *ram)
+{
+	unsigned char		sum[2];
+
+	/* these must be 66/68 */
+	ram[S3_CHECKSUM_OFFSET - 2] = (unsigned char) 66;
+	ram[S3_CHECKSUM_OFFSET - 1] = (unsigned char) 68;
+
+	s3_gen_cksum(ram, sum);
+
+	/* write back checksum */
+	ram[S3_CHECKSUM_OFFSET] = sum[0];
+	ram[S3_CHECKSUM_OFFSET+1] = sum[1];
+
+	return (DGM_OK);
+}
+
+int
+s3_test(char *outpath)
+{
+	struct dgm_file		fs;
+	int			ret = DGM_FAIL;
+
+	memset(&fs, 0, sizeof(struct dgm_file));
+	if ((fs.bytes = calloc(1, S3_RAM_SZ)) == NULL) {
+		warn("malloc");
+		goto clean;
+	}
+	memcpy(fs.bytes, s3_ram, S3_RAM_SZ);
+	fs.sz = S3_RAM_SZ;
+
+	fs.bytes[S3_SAVE_SLOTS_START + S3_SAVE_OFFSET_ZONE] = (unsigned char) 7;
+	fs.bytes[S3_SAVE_SLOTS_START + S3_SAVE_OFFSET_EMS_COLLECTED] = (unsigned char) 0xff;
+	fs.bytes[S3_SAVE_SLOTS_START + S3_SAVE_OFFSET_EM_COUNT] = (unsigned char) 7;
+	//fs.bytes[S3_SAVE_SLOTS_START + S3_SAVE_OFFSET_USED] = (unsigned char) 128;
+
+	s3_write_checksum(fs.bytes);
+	s3_write_second_copy(fs.bytes);
+
+	dgm_dump_out_file(outpath, &fs);
+
+	ret = DGM_OK;
+clean:
+
+	return (ret);
+}
+
+int
+main(int argc, char **argv)
+{
+	/* XXX */
+	char			*outfile = "newram";
+
+	s3_test(outfile);
+
+	return (EXIT_SUCCESS);
+}
+
+
