@@ -24,7 +24,6 @@
 #include <string.h>
 #include <unistd.h>
 
-
 #include "dgm_romlib.h"
 #include "dgm_common.h"
 
@@ -37,7 +36,8 @@ struct dgm_rom_header_mapping dgm_rom_header_mappings[] = {
 	{GNS_OFS_PRODUCT_CODE,	GNS_FLEN_PRODUCT_CODE,	"Product Code",	dgm_print_rom_header_field_char},
 	{GNS_OFS_CHECKSUM,	GNS_FLEN_CHECKSUM,	"Checksum",	dgm_print_rom_header_field_hex},
 	{GNS_OFS_IO_SUPPORT,	GNS_FLEN_IO_SUPPORT,	"IO Support",	dgm_print_rom_header_field_char},
-	{GNS_OFS_CAPACITY,	GNS_FLEN_CAPACITY,	"ROM Capacity",	dgm_print_rom_header_field_hex},
+	{GNS_OFS_ROM_START,	GNS_FLEN_ROM_START,	"ROM Start",	dgm_print_rom_header_field_hex},
+	{GNS_OFS_ROM_END,	GNS_FLEN_ROM_END,	"ROM End",	dgm_print_rom_header_field_hex},
 	{GNS_OFS_RAM,		GNS_FLEN_RAM,		"RAM",		dgm_print_rom_header_field_hex},
 	{GNS_OFS_RAM_PRESENT,	GNS_FLEN_RAM_PRESENT,	"RAM Present?",	dgm_print_rom_header_field_char},
 	{GNS_OFS_RAM_START,	GNS_FLEN_RAM_START,	"RAM Start",	dgm_print_rom_header_field_u32_byteswapped},
